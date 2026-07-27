@@ -4,9 +4,7 @@ import { logger } from "./lib/logger";
 const rawPort = process.env["PORT"];
 
 if (!rawPort) {
-  throw new Error(
-    "PORT environment variable is required but was not provided.",
-  );
+  throw new Error("PORT environment variable is required but was not provided.");
 }
 
 const port = Number(rawPort);
@@ -21,5 +19,5 @@ app.listen(port, (err) => {
     process.exit(1);
   }
 
-  logger.info({ port }, "QuantumAI-Backend listening");
+  logger.info({ port }, "QuantumAI-Backend listening — POST /api/chat");
 });

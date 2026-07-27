@@ -3,115 +3,42 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 1.0.0
-  description: QuantumAI-Backend API specification
+  description: QuantumAI-Backend — minimal Gemini chat API
 servers:
   - url: /api
     description: Base API path
 tags:
-  - name: health
-    description: Health and liveness
-  - name: system
-    description: System status and metadata
-  - name: models
-    description: AI model registry
   - name: chat
-    description: Chat completion endpoints
+    description: Chat endpoint
 
 paths:
-  /healthz:
-    get:
-      operationId: healthCheck
-      tags: [health]
-      summary: Health check
-      description: Returns server health status
-      responses:
-        "200":
-          description: Healthy
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/HealthStatus"
-
-  /v1/status:
-    get:
-      operationId: getSystemStatus
-      tags: [system]
-      summary: System status
-      description: Returns server uptime, version, and resource info
-      responses:
-        "200":
-          description: System status
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SystemStatus"
-
-  /v1/models:
-    get:
-      operationId: listModels
-      tags: [models]
-      summary: List models
-      description: Returns all registered AI models
-      responses:
-        "200":
-          description: List of models
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ModelList"
-
-  /v1/models/{modelId}:
-    get:
-      operationId: getModel
-      tags: [models]
-      summary: Get model by ID
-      parameters:
-        - in: path
-          name: modelId
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Model details
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Model"
-        "404":
-          description: Model not found
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
-  /v1/chat/completions:
+  /chat:
     post:
-      operationId: createChatCompletion
+      operationId: chat
       tags: [chat]
-      summary: Create chat completion
-      description: Generate a response from a model given a list of messages
+      summary: Send a message
+      description: Send a message and receive a reply from Gemini
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ChatCompletionRequest"
+              $ref: "#/components/schemas/ChatRequest"
       responses:
         "200":
-          description: Completion result
+          description: Gemini reply
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ChatCompletionResponse"
+                $ref: "#/components/schemas/ChatResponse"
         "400":
-          description: Invalid request
+          description: Bad request
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
-        "404":
-          description: Model not found
+        "500":
+          description: Gemini error
           content:
             application/json:
               schema:
@@ -119,193 +46,27 @@ paths:
 
 components:
   schemas:
-    HealthStatus:
+    ChatRequest:
       type: object
       properties:
-        status:
-          type: string
-          enum: [ok, degraded]
-      required:
-        - status
-
-    SystemStatus:
-      type: object
-      properties:
-        name:
-          type: string
-        version:
-          type: string
-        uptimeSeconds:
-          type: number
-        memoryUsageMb:
-          type: number
-        nodeVersion:
-          type: string
-        environment:
-          type: string
-      required:
-        - name
-        - version
-        - uptimeSeconds
-        - memoryUsageMb
-        - nodeVersion
-        - environment
-
-    Model:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        description:
-          type: string
-        provider:
-          type: string
-        contextWindow:
-          type: integer
-        maxOutputTokens:
-          type: integer
-        capabilities:
-          type: array
-          items:
-            type: string
-        createdAt:
-          type: string
-          format: date-time
-      required:
-        - id
-        - name
-        - description
-        - provider
-        - contextWindow
-        - maxOutputTokens
-        - capabilities
-        - createdAt
-
-    ModelList:
-      type: object
-      properties:
-        object:
-          type: string
-        data:
-          type: array
-          items:
-            $ref: "#/components/schemas/Model"
-        total:
-          type: integer
-      required:
-        - object
-        - data
-        - total
-
-    ChatMessage:
-      type: object
-      properties:
-        role:
-          type: string
-          enum: [system, user, assistant]
-        content:
-          type: string
-      required:
-        - role
-        - content
-
-    ChatCompletionRequest:
-      type: object
-      properties:
-        model:
-          type: string
-        messages:
-          type: array
-          items:
-            $ref: "#/components/schemas/ChatMessage"
-          minItems: 1
-        temperature:
-          type: number
-          minimum: 0
-          maximum: 2
-          default: 0.7
-        maxTokens:
-          type: integer
-          minimum: 1
-          maximum: 32768
-        stream:
-          type: boolean
-          default: false
-      required:
-        - model
-        - messages
-
-    ChatCompletionChoice:
-      type: object
-      properties:
-        index:
-          type: integer
         message:
-          $ref: "#/components/schemas/ChatMessage"
-        finishReason:
           type: string
-          enum: [stop, length, content_filter]
+          minLength: 1
       required:
-        - index
         - message
-        - finishReason
 
-    ChatUsage:
+    ChatResponse:
       type: object
       properties:
-        promptTokens:
-          type: integer
-        completionTokens:
-          type: integer
-        totalTokens:
-          type: integer
+        reply:
+          type: string
       required:
-        - promptTokens
-        - completionTokens
-        - totalTokens
-
-    ChatCompletionResponse:
-      type: object
-      properties:
-        id:
-          type: string
-        object:
-          type: string
-        created:
-          type: integer
-        model:
-          type: string
-        choices:
-          type: array
-          items:
-            $ref: "#/components/schemas/ChatCompletionChoice"
-        usage:
-          $ref: "#/components/schemas/ChatUsage"
-      required:
-        - id
-        - object
-        - created
-        - model
-        - choices
-        - usage
+        - reply
 
     ErrorResponse:
       type: object
       properties:
         error:
-          type: object
-          properties:
-            code:
-              type: string
-            message:
-              type: string
-            details:
-              type: object
-              additionalProperties: true
-          required:
-            - code
-            - message
+          type: string
       required:
         - error
