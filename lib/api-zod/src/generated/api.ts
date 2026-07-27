@@ -24,3 +24,20 @@ export const ChatResponse = zod.object({
 })
 
 
+/**
+ * Generate an image from a text prompt using Gemini image generation
+ * @summary Generate an image
+ */
+
+
+
+export const GenerateImageBody = zod.object({
+  "prompt": zod.string().min(1)
+})
+
+export const GenerateImageResponse = zod.object({
+  "b64_json": zod.string(),
+  "mimeType": zod.string()
+})
+
+

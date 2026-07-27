@@ -14,6 +14,16 @@ export interface ChatResponse {
   reply: string;
 }
 
+export interface GenerateImageRequest {
+  /** @minLength 1 */
+  prompt: string;
+}
+
+export interface GenerateImageResponse {
+  b64_json: string;
+  mimeType: string;
+}
+
 export interface ErrorResponse {
   error: string;
 }

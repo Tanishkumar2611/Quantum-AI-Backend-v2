@@ -44,6 +44,38 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /generate-image:
+    post:
+      operationId: generateImage
+      tags: [chat]
+      summary: Generate an image
+      description: Generate an image from a text prompt using Gemini image generation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GenerateImageRequest"
+      responses:
+        "200":
+          description: Generated image as base64
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GenerateImageResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Gemini error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
 components:
   schemas:
     ChatRequest:
@@ -62,6 +94,26 @@ components:
           type: string
       required:
         - reply
+
+    GenerateImageRequest:
+      type: object
+      properties:
+        prompt:
+          type: string
+          minLength: 1
+      required:
+        - prompt
+
+    GenerateImageResponse:
+      type: object
+      properties:
+        b64_json:
+          type: string
+        mimeType:
+          type: string
+      required:
+        - b64_json
+        - mimeType
 
     ErrorResponse:
       type: object

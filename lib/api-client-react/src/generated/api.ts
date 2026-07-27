@@ -17,7 +17,9 @@ import type {
 import type {
   ChatRequest,
   ChatResponse,
-  ErrorResponse
+  ErrorResponse,
+  GenerateImageRequest,
+  GenerateImageResponse
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -102,5 +104,77 @@ export const useChat = <TError = ErrorType<ErrorResponse>,
         TContext
       > => {
       return useMutation(getChatMutationOptions(options));
+    }
+
+export const getGenerateImageUrl = () => {
+
+
+
+
+  return `/api/generate-image`
+}
+
+/**
+ * Generate an image from a text prompt using Gemini image generation
+ * @summary Generate an image
+ */
+export const generateImage = async (generateImageRequest: GenerateImageRequest, options?: RequestInit): Promise<GenerateImageResponse> => {
+
+  return customFetch<GenerateImageResponse>(getGenerateImageUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(generateImageRequest)
+  }
+);}
+
+
+
+
+
+export const getGenerateImageMutationOptions = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateImage>>, TError,{data: BodyType<GenerateImageRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateImage>>, TError,{data: BodyType<GenerateImageRequest>}, TContext> => {
+
+const mutationKey = ['generateImage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateImage>>, {data: BodyType<GenerateImageRequest>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  generateImage(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateImageMutationResult = NonNullable<Awaited<ReturnType<typeof generateImage>>>
+    export type GenerateImageMutationBody = BodyType<GenerateImageRequest>
+    export type GenerateImageMutationError = ErrorType<ErrorResponse>
+
+    /**
+ * @summary Generate an image
+ */
+export const useGenerateImage = <TError = ErrorType<ErrorResponse>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateImage>>, TError,{data: BodyType<GenerateImageRequest>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateImage>>,
+        TError,
+        {data: BodyType<GenerateImageRequest>},
+        TContext
+      > => {
+      return useMutation(getGenerateImageMutationOptions(options));
     }
 
