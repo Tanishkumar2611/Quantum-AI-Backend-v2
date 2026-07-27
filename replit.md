@@ -1,36 +1,59 @@
-# [Project name]
+# QuantumAI-Backend
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A Node.js Express API server for AI model management and chat completions, with Zod-validated request/response handling and a contract-first OpenAPI design.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — build and run the API server (port assigned by workflow)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- `pnpm --filter @workspace/api-spec run codegen` — regenerate Zod schemas and React Query hooks from the OpenAPI spec
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Validation: Zod (`zod/v4`), generated schemas from `@workspace/api-zod`
+- API contract: OpenAPI 3.1 → codegen via Orval
+- Build: esbuild (ESM bundle)
+- Logging: pino + pino-http
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+| Path | Purpose |
+|---|---|
+| `lib/api-spec/openapi.yaml` | Single source of truth for all API contracts |
+| `lib/api-zod/src/generated/` | Zod schemas generated from the OpenAPI spec |
+| `artifacts/api-server/src/routes/` | Express route handlers |
+| `artifacts/api-server/src/data/models.ts` | In-memory AI model registry |
+
+## API Endpoints
+
+All routes are prefixed with `/api`.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/api/healthz` | Liveness check |
+| `GET` | `/api/v1/status` | Server name, version, uptime, memory |
+| `GET` | `/api/v1/models` | List all registered AI models |
+| `GET` | `/api/v1/models/:modelId` | Get a model by ID |
+| `POST` | `/api/v1/chat/completions` | Submit a chat completion request |
+
+## Registered Models
+
+| ID | Name | Context | Capabilities |
+|---|---|---|---|
+| `quantum-ultra-v1` | Quantum Ultra v1 | 128k | reasoning, code, math, vision, chat |
+| `quantum-core-v2` | Quantum Core v2 | 64k | chat, code, summarisation, translation |
+| `quantum-flash-v1` | Quantum Flash v1 | 32k | chat, summarisation, classification |
+| `quantum-code-v1` | Quantum Code v1 | 96k | code, debugging, explanation, refactoring |
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- **OpenAPI-first**: The spec in `lib/api-spec/openapi.yaml` is the single source of truth. Run codegen after every spec change — never edit generated files directly.
+- **Zod on the server**: Route handlers import generated `@workspace/api-zod` schemas for both input validation and output shaping, ensuring the response always matches the spec.
+- **In-memory model registry**: `src/data/models.ts` holds the model catalog. To persist models, swap this for a Drizzle ORM query against the provisioned Postgres DB.
+- **Stub completions**: `POST /api/v1/chat/completions` returns deterministic stub responses. Wire up an LLM provider (e.g. OpenAI, Anthropic via Replit AI Integrations) to generate real completions.
 
 ## User preferences
 
@@ -38,8 +61,10 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- After editing `lib/api-spec/openapi.yaml`, always run `pnpm --filter @workspace/api-spec run codegen` before restarting the server.
+- Do not import `zod` with a relative path — it is listed in `artifacts/api-server/package.json` as a direct dependency.
+- Restart the `artifacts/api-server: API Server` workflow (not a raw `pnpm dev` call) to pick up env vars injected by the artifact system.
 
 ## Pointers
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
