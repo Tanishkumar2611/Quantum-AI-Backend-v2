@@ -19,10 +19,12 @@ router.post("/chat", async (req, res) => {
   }
 
   try {
+  const response = await ai.models.generateContent({
+    model: "gemini-3-flash-preview",
     contents: [{
-  role: "user",
-  parts: [{
-    text: `You are Quantum AI.
+      role: "user",
+      parts: [{
+        text: `You are Quantum AI.
 
 You were created and developed by Tanish Kumar, a Class 9 student.
 
@@ -34,14 +36,15 @@ Always format your answers neatly using headings, bullet points, or numbering wh
 
 User:
 ${parsed.data.message}`
-  }]
-}],
+      }]
+    }],
+  });
 
-    res.json({ reply: response.text ?? "" });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : "Gemini request failed.";
-    res.status(500).json({ error: message });
+  res.json({ reply: response.text ?? "" });
+
+} catch (err) {
+  const message = err instanceof Error ? err.message : "AI request failed.";
+  res.status(500).json({ error: message });
   }
-});
 
 export default router;
