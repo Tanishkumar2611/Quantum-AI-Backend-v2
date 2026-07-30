@@ -21,6 +21,26 @@ router.post("/chat", async (req, res) => {
     });
     return;
   }
+const question = parsed.data.message.toLowerCase();
+
+if (
+  question.includes("who created you") ||
+  question.includes("who made you") ||
+  question.includes("who developed you") ||
+  question.includes("who is your developer") ||
+  question.includes("who is your creator") ||
+  question.includes("who owns you")
+) {
+  res.json({
+    reply: `I am Quantum AI.
+
+I am an AI application developed by Tanish Kumar, a Class 9 student.
+
+How can I help you today?`
+  });
+  return;
+}
+
 
   try {
     const response = await ai.models.generateContent({
